@@ -1,0 +1,29 @@
+name: Enforce PR Branch Rules
+
+on:
+  pull_request:
+    branches:
+      - qa
+      - main
+
+jobs:
+  restrict-branch-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR source branch
+        run: |
+          echo "Validating PR source and target branches..."
+          BASE="${{ github.base_ref }}"
+          HEAD="${{ github.head_ref }}"
+
+          if [[ "$BASE" == "qa" && "$HEAD" != "dev" ]]; then
+            echo "❌ Only 'dev' is allowed to merge into 'qa'. This PR is from '$HEAD'."
+            exit 1
+          fi
+
+          if [[ "$BASE" == "main" && "$HEAD" != "qa" ]]; then
+            echo "❌ Only 'qa' is allowed to merge into 'main'. This PR is from '$HEAD'."
+            exit 1
+          fi
+
+          echo "✅ PR direction is allowed."
